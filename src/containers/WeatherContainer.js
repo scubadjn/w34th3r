@@ -3,48 +3,58 @@ import { parseString } from 'react-native-xml2js'
 
 export const transformXmlToJson = (xmlString, callback) => {
   parseString(xmlString, (err, res) => {
+    if (err) {
+      callback(err, null)
+    }
+    else if (!res.weatherdata || !res.weatherdata.forecast) {
+      // TODO throw an error if xml data is invalid
+      callback(true, null)
+    }
+    else {
 
-    // extract data from xml
-    let data = []
-    res.weatherdata.forecast.map(forecast => {
-      forecast.tabular.map(tabular => {
-        tabular.time.map(time => {
-          let forecast ={ forecast: {} }
-          forecast.date = time.$.from.split('T')[0]
-          forecast.forecast.time = time.$.from.split('T')[1].substring(0,5)
-          forecast.forecast.weatherCondition = time.symbol[0].$.name
-          forecast.forecast.imgUri = `http://symbol.yr.no/grafikk/sym/b100/${time.symbol[0].$.var}.png`
-          forecast.forecast.temperatureCelcius = time.temperature[0].$.value
-          forecast.forecast.wind = {
-            condition: time.windSpeed[0].$.name,
-            speedMps: time.windSpeed[0].$.mps,
-            direction: time.windDirection[0].$.name
-          }
-          data.push(forecast)
+      // extract data from xml
+      let data = []
+      res.weatherdata.forecast.forEach(forecast => {
+        forecast.tabular.forEach(tabular => {
+          tabular.time.forEach(time => {
+            let forecast = { forecast: {} }
+            forecast.date = time.$.from.split('T')[0]
+            forecast.forecast.time = time.$.from.split('T')[1].substring(0, 5)
+            forecast.forecast.weatherCondition = time.symbol[0].$.name
+            forecast.forecast.imgUri = `http://symbol.yr.no/grafikk/sym/b100/${time.symbol[0].$.var}.png`
+            forecast.forecast.temperatureCelcius = time.temperature[0].$.value
+            forecast.forecast.wind = {
+              condition: time.windSpeed[0].$.name,
+              speedMps: time.windSpeed[0].$.mps,
+              direction: time.windDirection[0].$.name
+            }
+            data.push(forecast)
+          })
         })
       })
-    })
 
-    // bundle forecasts with same date
-    let bundledDates = {}
-    data.map(forecast => {
-      if (!bundledDates[forecast.date]) {
-        bundledDates[forecast.date] = {}
-        bundledDates[forecast.date].date = forecast.date
-        bundledDates[forecast.date].forecasts = []
-      }
-      bundledDates[forecast.date].forecasts.push(forecast.forecast)
-    })
+      // bundle forecasts with same date
+      let bundledDates = {}
+      data.forEach(forecast => {
+        if (!bundledDates[forecast.date]) {
+          bundledDates[forecast.date] = {}
+          bundledDates[forecast.date].date = forecast.date
+          bundledDates[forecast.date].forecasts = []
+        }
+        bundledDates[forecast.date].forecasts.push(forecast.forecast)
+      })
 
-    // convert to array
-    let result = []
-    Object.keys(bundledDates).map(forecastKey => {
-      result.push(bundledDates[forecastKey])
-    })
+      // convert to array
+      let result = []
+      Object.keys(bundledDates).forEach(forecastKey => {
+        result.push(bundledDates[forecastKey])
+      })
 
-    callback(err, {
-      data: result
-    })
+      callback(null, {
+        data: result
+      })
+
+    }
   })
 }
 
@@ -71,7 +81,7 @@ export default class WeatherContainer extends React.Component {
     this.fetchWeather()
       .then(xmlString => {
         transformXmlToJson(xmlString, (err, { data }) => {
-          if (err){
+          if (err) {
             this.setState({
               loading: false,
               error: true
