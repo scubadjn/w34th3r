@@ -21,6 +21,11 @@ npm start
 react-native run-android
 ```
 
+ * run unit tests
+```bash
+npm test
+```
+
 ### Todos
 - [ ] add JSLint
 - [ ] improve xml validation
