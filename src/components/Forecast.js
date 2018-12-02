@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, Image } from 'react-native';
 
-export default ({ time, imgUri, weatherCondition, temperatureCelcius, wind }) => {
+const Forecast = ({ time, imgUri, weatherCondition, temperatureCelcius, wind }) => {
   return (
     <View style={styles.container}>
       <View>
@@ -13,8 +13,9 @@ export default ({ time, imgUri, weatherCondition, temperatureCelcius, wind }) =>
       </View>
       <View>
         <Text>{weatherCondition}</Text>
+        <Text>{wind.condition}</Text>
         <Text>{temperatureCelcius} C</Text>
-        <Text>{wind.condition} - {wind.speedMps} mps {wind.direction}</Text>
+        <Text>{wind.speedMps} mps {wind.direction}</Text>
       </View>
     </View>
   )
@@ -35,3 +36,5 @@ const styles = StyleSheet.create({
     height: 100
   }
 })
+
+export default Forecast

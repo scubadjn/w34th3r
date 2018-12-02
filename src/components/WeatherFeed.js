@@ -1,30 +1,58 @@
 import React from 'react';
-import { Text, ScrollView } from 'react-native';
+import { Text, ScrollView, Button, Linking } from 'react-native';
 import WeatherContainer from '../containers/WeatherContainer'
 import ForecastWrapper from './ForecastWrapper'
 
-export default () => {
-  return (
-    <WeatherContainer>
-      {({ data, loading, error }) => {
-        if (error) {
+
+
+export default class WeatherFeed extends React.Component {
+
+  openUrl = async () => {
+    try {
+      return await Linking.openURL("http://www.yr.no/place/Sweden/Norrbotten/Luleå/")
+    }
+    catch (err){
+      throw new Error(err)
+    }
+  }
+
+  render() {
+    return (
+      <WeatherContainer>
+        {({ data, loading, error }) => {
+          if (error) {
+            return (
+              <Text>Oops something went wrong</Text>
+            )
+          }
+          if (loading) {
+            return (
+              <Text>Loading ...</Text>
+            )
+          }
           return (
-            <Text>Oops something went wrong</Text>
+            <ScrollView>
+              <Button
+                onPress={this.openUrl}
+                color="#008000"
+                title="Weather forecast from Yr, delivered by the Norwegian Meteorological Institute and the NRK"
+              />
+              {data.map((item, index) => (
+                <ForecastWrapper key={index} {...item} />
+              ))}
+            </ScrollView>
           )
-        }
-        if (loading) {
-          return (
-            <Text>Loading ...</Text>
-          )
-        }
-        return (
-          <ScrollView>
-            {data.map((item, index) => (
-              <ForecastWrapper key={index} {...item} />
-            ))}
-          </ScrollView>
-        )
-      }}
-    </WeatherContainer>
-  )
+        }}
+      </WeatherContainer>
+    )
+  }
+
+  componentDidMount() {
+    Linking.addEventListener('url', this.openUrl);
+  }
+
+  componentWillUnmount() {
+    Linking.removeEventListener('url', this.openUrl);
+  }
+
 }

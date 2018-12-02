@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Forecast from './Forecast'
 
-export default ({ date, forecasts }) => {
+const ForecastWrapper = ({ date, forecasts }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>
@@ -32,3 +32,5 @@ const styles = StyleSheet.create({
     color: '#fff'
   }
 })
+
+export default ForecastWrapper
