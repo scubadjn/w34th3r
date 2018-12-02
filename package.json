@@ -1,0 +1,28 @@
+{
+  "name": "w34th3r",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "test": "jest"
+  },
+  "dependencies": {
+    "react": "16.6.1",
+    "react-native": "0.57.7",
+    "react-native-xml2js": "^1.0.3",
+    "yarn": "^1.12.3"
+  },
+  "devDependencies": {
+    "babel-jest": "23.6.0",
+    "babel-preset-react-native": "^4.0.1",
+    "jest": "23.6.0",
+    "metro-react-native-babel-preset": "0.50.0",
+    "react-test-renderer": "16.6.1"
+  },
+  "jest": {
+    "preset": "react-native",
+    "transform": {
+      "^.+\\.js$": "<rootDir>/node_modules/react-native/jest/preprocessor.js"
+    }
+  }
+}
