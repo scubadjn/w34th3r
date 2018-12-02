@@ -13,7 +13,8 @@ export const transformXmlToJson = (xmlString, callback) => {
     else {
 
       // extract data from xml
-      let data = []
+      let bundledDates = {}
+
       res.weatherdata.forecast.forEach(forecast => {
         forecast.tabular.forEach(tabular => {
           tabular.time.forEach(time => {
@@ -28,31 +29,25 @@ export const transformXmlToJson = (xmlString, callback) => {
               speedMps: time.windSpeed[0].$.mps,
               direction: time.windDirection[0].$.name
             }
-            data.push(forecast)
+
+            // bundle forecastes by date
+            if (!bundledDates[forecast.date]) {
+              bundledDates[forecast.date] = {}
+              bundledDates[forecast.date].date = forecast.date
+              bundledDates[forecast.date].forecasts = []
+            }
+            bundledDates[forecast.date].forecasts.push(forecast.forecast)
           })
         })
       })
 
-      // bundle forecasts with same date
-      let bundledDates = {}
-      data.forEach(forecast => {
-        if (!bundledDates[forecast.date]) {
-          bundledDates[forecast.date] = {}
-          bundledDates[forecast.date].date = forecast.date
-          bundledDates[forecast.date].forecasts = []
-        }
-        bundledDates[forecast.date].forecasts.push(forecast.forecast)
-      })
-
       // convert to array
-      let result = []
+      let data = []
       Object.keys(bundledDates).forEach(forecastKey => {
-        result.push(bundledDates[forecastKey])
+        data.push(bundledDates[forecastKey])
       })
 
-      callback(null, {
-        data: result
-      })
+      callback(null, { data })
 
     }
   })
