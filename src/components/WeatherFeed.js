@@ -19,7 +19,7 @@ export default class WeatherFeed extends React.Component {
   render() {
     return (
       <WeatherContainer>
-        {({ data, loading, error }) => {
+        {({ data, loading, error, refetch }) => {
           if (error) {
             return (
               <Text>Oops something went wrong</Text>
@@ -40,6 +40,11 @@ export default class WeatherFeed extends React.Component {
               {data.map((item, index) => (
                 <ForecastWrapper key={index} {...item} />
               ))}
+              <Button
+                onPress={refetch}
+                color="#008000"
+                title="reload"
+              />
             </ScrollView>
           )
         }}

@@ -1,14 +1,14 @@
-import React from 'react';
+import React from 'react'
 import { parseString } from 'react-native-xml2js'
 
-export const transformXmlToJson = (xmlString, callback) => {
+export const transformXmlToJson = xmlString => new Promise((resolve, reject) =>
   parseString(xmlString, (err, res) => {
     if (err) {
-      callback(err, null)
+      reject(err)
     }
     else if (!res.weatherdata || !res.weatherdata.forecast) {
-      // TODO throw an error if xml data is invalid
-      callback(true, null)
+      // TODO improve xml validation
+      reject(new Error('Invalid xml'))
     }
     else {
 
@@ -17,17 +17,22 @@ export const transformXmlToJson = (xmlString, callback) => {
 
       res.weatherdata.forecast.forEach(forecast => {
         forecast.tabular.forEach(tabular => {
-          tabular.time.forEach(time => {
-            let forecast = { forecast: {} }
-            forecast.date = time.$.from.split('T')[0]
-            forecast.forecast.time = time.$.from.split('T')[1].substring(0, 5)
-            forecast.forecast.weatherCondition = time.symbol[0].$.name
-            forecast.forecast.imgUri = `http://symbol.yr.no/grafikk/sym/b100/${time.symbol[0].$.var}.png`
-            forecast.forecast.temperatureCelcius = time.temperature[0].$.value
-            forecast.forecast.wind = {
-              condition: time.windSpeed[0].$.name,
-              speedMps: time.windSpeed[0].$.mps,
-              direction: time.windDirection[0].$.name
+          tabular.time.forEach(json => {
+
+            const [date, time] = json.$.from.split('T')
+            const forecast = {
+              date,
+              forecast: {
+                time: time.substring(0, 5),
+                weatherCondition: json.symbol[0].$.name,
+                imgUri: `http://symbol.yr.no/grafikk/sym/b100/${json.symbol[0].$.var}.png`,
+                temperatureCelcius: json.temperature[0].$.value,
+                wind: {
+                  condition: json.windSpeed[0].$.name,
+                  speedMps: json.windSpeed[0].$.mps,
+                  direction: json.windDirection[0].$.name
+                }
+              }
             }
 
             // bundle forecastes by date
@@ -41,17 +46,15 @@ export const transformXmlToJson = (xmlString, callback) => {
         })
       })
 
-      // convert to array
-      let data = []
-      Object.keys(bundledDates).forEach(forecastKey => {
-        data.push(bundledDates[forecastKey])
+      resolve({
+        data: Object.keys(bundledDates).map(forecastKey => {
+          return bundledDates[forecastKey]
+        })
       })
-
-      callback(null, { data })
-
     }
   })
-}
+)
+
 
 export default class WeatherContainer extends React.Component {
 
@@ -72,37 +75,41 @@ export default class WeatherContainer extends React.Component {
     }
   }
 
-  componentWillMount() {
-    this.fetchWeather()
-      .then(xmlString => {
-        transformXmlToJson(xmlString, (err, { data }) => {
-          if (err) {
-            this.setState({
-              loading: false,
-              error: true
-            })
-          }
-
-          this.setState({
-            data,
-            loading: false,
-            error: false
-          })
-
-        })
+  fetchAndMapData = async () => {
+    try {
+      const xmlString = await this.fetchWeather()
+      const { data } = await transformXmlToJson(xmlString)
+      this.setState({
+        data,
+        loading: false,
+        error: false
       })
-      .catch(() => {
-        this.setState({
-          loading: false,
-          error: true
-        })
-
+    }
+    catch (err) {
+      this.setState({
+        loading: false,
+        error: true
       })
+    }
+  }
+
+  refetchData = () => {
+    this.setState({ loading: true })
+    this.fetchAndMapData()
   }
 
   render() {
     const { data, loading, error } = this.state
-    return this.props.children({ data, loading, error })
+    return this.props.children({
+      data,
+      loading,
+      error,
+      refetch: this.refetchData
+    })
+  }
+
+  componentDidMount() {
+    this.fetchAndMapData()
   }
 
 }
