@@ -1,5 +1,5 @@
 # Awsome w34th3r app
-![screenshot](https://bitbucket.org/Scubadjn/weather/src/develop/screenshot.png)
+![screenshot](https://bitbucket.org/Scubadjn/weather/raw/864fb047e35f101c59924a518d180a6b0b9b7189/screenshot.png)
 ## Quickstart
 
 ### Pre requirements  
