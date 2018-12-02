@@ -1,5 +1,5 @@
 # Awsome w34th3r app
-![Alt text](example.png "example")
+![screenshot](https://bitbucket.org/Scubadjn/weather/src/develop/screenshot.png)
 ## Quickstart
 
 ### Pre requirements  
